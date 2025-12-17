@@ -287,6 +287,8 @@ const elAnswerRU = document.getElementById("answerRU");
 const elInstantRU = document.getElementById("instantRU");
 const elSegments = document.getElementById("progressSegments");
 const STORAGE_KEY = "pere-noel-progress";
+let currentTokens = [];
+let currentDistractors = [];
 
 document.getElementById("checkBtn").addEventListener("click", check);
 document.getElementById("showBtn").addEventListener("click", showAnswer);
@@ -412,7 +414,8 @@ function restoreProgress() {
       state.score = Number.isInteger(parsed.score) ? parsed.score : 0;
       const solvedArr = Array.isArray(parsed.solved) ? parsed.solved : [];
       state.solved = new Set(solvedArr.filter((x) => Number.isInteger(x)));
-      // подстрахуемся: если score не совпадает с solved, пересчитаем
+      // добавим решённые по results, если их нет в solved
+      state.results.forEach((v, idx) => { if (v === "ok") state.solved.add(idx); });
       state.score = state.solved.size;
     }
   } catch (_) {}
@@ -422,37 +425,52 @@ function loadSentence(i) {
   state.i = i;
   const s = SENTENCES[state.i];
   const tokens = tokenizeFR(s.fr);
+  currentTokens = tokens;
 
   // делаем ловушки (часть возьмём случайно, чтобы не перегружать)
   const distractors = shuffle(makeDistractors(tokens, s.fr)).slice(0, Math.min(8, Math.max(4, Math.floor(tokens.length/3))));
-  state.built = [];
-  state.pool = shuffle([...tokens, ...distractors]);
+  currentDistractors = distractors;
+
+  // если уже решено — показываем собранным
+  if (state.results[state.i] === "ok") {
+    // убеждаемся, что solved и score согласованы
+    state.solved.add(state.i);
+    state.score = state.solved.size;
+    state.built = [...tokens];
+    state.pool = [...distractors];
+  } else {
+    state.built = [];
+    state.pool = shuffle([...tokens, ...distractors]);
+  }
   render();
   saveProgress();
 }
 
 function resetBuilt(){
   // вернуть всё вниз
-  state.pool = shuffle([...state.pool, ...state.built]);
+  const tokens = tokenizeFR(SENTENCES[state.i].fr);
+  const distractors = shuffle(makeDistractors(tokens, SENTENCES[state.i].fr)).slice(0, Math.min(8, Math.max(4, Math.floor(tokens.length/3))));
+
+  if (state.results[state.i] === "ok") {
+    state.results[state.i] = "pending";
+    state.solved.delete(state.i);
+    state.score = state.solved.size;
+  } else if (state.results[state.i] === "fail") {
+    state.results[state.i] = "pending";
+  }
+
+  state.pool = shuffle([...tokens, ...distractors]);
   state.built = [];
   elStatus.textContent = "";
   elStatus.className = "status";
   elAnswerBox.style.display = "none";
   render();
+  saveProgress();
 }
 
 function check() {
   const target = SENTENCES[state.i].fr;
   const attempt = joinTokens(state.built);
-
-  // визуальная подсветка: какие токены совпадают по позиции
-  const correctTokens = tokenizeFR(target);
-  const builtEls = Array.from(elBuilt.querySelectorAll(".token"));
-  builtEls.forEach((el, idx) => {
-    el.classList.remove("good","bad");
-    if (correctTokens[idx] === state.built[idx]) el.classList.add("good");
-    else el.classList.add("bad");
-  });
 
   if (attempt === target) {
     elStatus.textContent = "✅ Верно! Отлично.";
@@ -463,7 +481,25 @@ function check() {
       state.score += 1;
       elScore.textContent = String(state.score);
     }
+    // подсветить все как верные, даже если токены были сгруппированы иначе
+    Array.from(elBuilt.querySelectorAll(".token")).forEach(el => {
+      el.classList.remove("bad");
+      el.classList.add("good");
+    });
   } else {
+    // визуальная подсветка: какие токены совпадают по позиции, только если длины совпадают
+    const correctTokens = tokenizeFR(target);
+    const builtEls = Array.from(elBuilt.querySelectorAll(".token"));
+    if (correctTokens.length === state.built.length) {
+      builtEls.forEach((el, idx) => {
+        el.classList.remove("good","bad");
+        if (correctTokens[idx] === state.built[idx]) el.classList.add("good");
+        else el.classList.add("bad");
+      });
+    } else {
+      builtEls.forEach(el => el.classList.remove("good","bad"));
+    }
+
     elStatus.textContent = "❌ Пока не совпало. Попробуй переставить/убрать лишнее или нажми “Показать ответ”.";
     elStatus.className = "status no";
     if (state.results[state.i] !== "ok") state.results[state.i] = "fail";
