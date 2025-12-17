@@ -286,6 +286,7 @@ const elAnswerFR = document.getElementById("answerFR");
 const elAnswerRU = document.getElementById("answerRU");
 const elInstantRU = document.getElementById("instantRU");
 const elSegments = document.getElementById("progressSegments");
+const STORAGE_KEY = "pere-noel-progress";
 
 document.getElementById("checkBtn").addEventListener("click", check);
 document.getElementById("showBtn").addEventListener("click", showAnswer);
@@ -389,6 +390,34 @@ elBuilt.addEventListener("drop", (e) => {
   render();
 });
 
+function saveProgress() {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({
+      i: state.i,
+      results: state.results,
+      score: state.score,
+      solved: Array.from(state.solved),
+    }));
+  } catch (_) {}
+}
+
+function restoreProgress() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return;
+    const parsed = JSON.parse(raw);
+    if (parsed && Array.isArray(parsed.results) && parsed.results.length === SENTENCES.length) {
+      state.results = parsed.results;
+      state.i = Math.min(Math.max(Number(parsed.i) || 0, 0), SENTENCES.length - 1);
+      state.score = Number.isInteger(parsed.score) ? parsed.score : 0;
+      const solvedArr = Array.isArray(parsed.solved) ? parsed.solved : [];
+      state.solved = new Set(solvedArr.filter((x) => Number.isInteger(x)));
+      // подстрахуемся: если score не совпадает с solved, пересчитаем
+      state.score = state.solved.size;
+    }
+  } catch (_) {}
+}
+
 function loadSentence(i) {
   state.i = i;
   const s = SENTENCES[state.i];
@@ -399,6 +428,7 @@ function loadSentence(i) {
   state.built = [];
   state.pool = shuffle([...tokens, ...distractors]);
   render();
+  saveProgress();
 }
 
 function resetBuilt(){
@@ -439,6 +469,7 @@ function check() {
     if (state.results[state.i] !== "ok") state.results[state.i] = "fail";
   }
   updateSegments();
+  saveProgress();
 }
 
 function showAnswer() {
@@ -455,7 +486,8 @@ function go(delta){
 }
 
 // init
-loadSentence(0);
+restoreProgress();
+loadSentence(state.i || 0);
 </script>
 </body>
 </html>
