@@ -5,6 +5,9 @@
 ## Играть онлайн
 https://roslovets.github.io/le-pere-noel/
 
+## Читать все фразы
+https://roslovets.github.io/le-pere-noel/sentences.html
+
 ## Как играть
 - Нажимай на кусочки снизу — они добавляются в предложение.
 - Клик по кусочку сверху убирает его обратно вниз.

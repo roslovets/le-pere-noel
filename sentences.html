@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Le Père Noël — все фразы с переводом</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700&family=Playfair+Display:wght@700&display=swap');
+    :root {
+      --r: 14px;
+      --bg: #061216;
+      --panel: rgba(12, 24, 31, 0.88);
+      --panel-2: rgba(18, 32, 41, 0.82);
+      --border: rgba(255, 255, 255, 0.14);
+      --text: #f6fbff;
+      --muted: #cfdceb;
+      --accent: #e7445b;
+      --accent-2: #1ea06d;
+      --gold: #f4c36a;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      font-family: 'Manrope', system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+      margin: 0;
+      background:
+        radial-gradient(circle at 20% 20%, rgba(244, 195, 106, 0.18), transparent 28%),
+        radial-gradient(circle at 82% 8%, rgba(231, 68, 91, 0.16), transparent 30%),
+        linear-gradient(135deg, #07131a, #0b1c22 45%, #0f152c);
+      color: var(--text);
+      min-height: 100vh;
+    }
+    .wrap { max-width: 980px; margin: 0 auto; padding: 20px 16px 40px; }
+    .top {
+      display:flex; gap:12px; flex-wrap:wrap; align-items:center; justify-content:space-between;
+      padding: 14px 16px;
+      background: linear-gradient(115deg, rgba(28, 129, 88, 0.95), rgba(216, 72, 93, 0.95));
+      border:1px solid rgba(255, 255, 255, 0.22);
+      border-radius: var(--r);
+      box-shadow: 0 14px 35px rgba(0, 0, 0, 0.32), 0 10px 34px rgba(231, 68, 91, 0.25);
+      color:#fff;
+    }
+    .title { font-weight:700; letter-spacing:.3px; font-size:20px; font-family:'Playfair Display','Manrope',serif; color:#fff; }
+    .meta { display:flex; gap:10px; flex-wrap:wrap; opacity:.95; font-size:14px; color:#fff; }
+    .pill { padding:6px 10px; border:1px solid rgba(255,255,255,0.3); border-radius:999px; background: rgba(255,255,255,0.12); backdrop-filter: blur(6px); }
+
+    .list { margin-top: 18px; display:flex; flex-direction:column; gap:12px; }
+    .item {
+      display:flex; gap:12px; align-items:flex-start;
+      background: var(--panel); border:1px solid var(--border); border-radius: var(--r);
+      padding: 14px 16px;
+      box-shadow: 0 12px 28px rgba(0,0,0,0.28);
+    }
+    .num {
+      width: 34px; height:34px; border-radius: 12px;
+      background: linear-gradient(135deg, #f4c36a, #e7445b);
+      color:#0b1218; font-weight: 800; display:flex; align-items:center; justify-content:center;
+      box-shadow: 0 10px 22px rgba(244,195,106,0.35);
+      flex-shrink:0;
+    }
+    .texts { display:flex; flex-direction:column; gap:6px; }
+    .fr { font-size: 16px; font-weight: 700; letter-spacing:.15px; color:#fdf3e6; }
+    .ru { font-size: 14px; color: var(--muted); }
+    .hint { margin-top: 12px; font-size: 13px; opacity:.9; color: var(--muted); }
+
+    .actions { margin-top: 14px; display:flex; gap:10px; flex-wrap:wrap; }
+    .btn {
+      cursor:pointer; border:none; border-radius: 12px;
+      padding: 10px 12px; background: linear-gradient(135deg, #1e8a5b, #2fb879); color:#fff; font-weight:700;
+      box-shadow: 0 12px 24px rgba(18, 98, 68, 0.3);
+      text-decoration:none; display:inline-flex; gap:8px; align-items:center;
+    }
+    .btn:hover { filter: brightness(1.03); transform: translateY(-1px); }
+
+    @media (max-width: 640px) {
+      .wrap { padding: 16px 12px 32px; }
+      .item { padding: 12px 12px; }
+      .fr { font-size: 15px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="top">
+      <div class="title">Все фразы — Le Père Noël</div>
+      <div class="meta">
+        <div class="pill">Всего: <span id="total">0</span></div>
+        <div class="pill">Формат: чтение</div>
+      </div>
+    </div>
+
+    <div class="actions">
+      <a class="btn" href="index.html">← Вернуться к игре</a>
+    </div>
+
+    <div class="list" id="list"></div>
+  </div>
+
+<script>
+const SENTENCES = [
+  { fr: "Quel est le symbole principal de Noël, après le sapin et Coca-Cola ?", ru: "Какой главный символ Рождества после ёлки и Coca-Cola?" },
+  { fr: "Qui vient la nuit chez nos enfants et leur apporte des cadeaux pour le Nouvel An ?", ru: "Кто приходит к нашим детям по ночам и приносит им подарки на Новый год?" },
+  { fr: "C’est le Père Noël ou bien saint Nicolas.", ru: "Это Дед Мороз, или святой Николай." },
+  { fr: "Mais pourquoi sommes-nous si attachés à ce personnage ?", ru: "Но почему мы так привязаны к этому персонажу?" },
+  { fr: "Pourquoi notre culture le fait revenir chaque année ?", ru: "Почему наша культура «возвращает» его каждый год?" },
+  { fr: "En ce moment, j’explique à mon petit garçon qu’il a un papy Dima, un papy Vova et un troisième papy : Ded Moroz. Ce n’est pas cringe, ça ?", ru: "Сейчас я объясняю своему маленькому сыну, что у него есть дед Дима, дед Вова и ещё какой-то третий дед: Дед Мороз. Это не кринж, а?" },
+  { fr: "Claude Lévi-Strauss, un anthropologue français, parle de cette question dans son essai Le Père Noël supplicié.", ru: "Клод Леви-Стросс, французский антрополог, говорит об этом в своём эссе Le Père Noël supplicié." },
+  { fr: "Dans cet essai, il décrit une scène très choquante.", ru: "В этом эссе он описывает очень шокирующую сцену." },
+  { fr: "Elle a eu lieu à Dijon, le 23 décembre 1951.", ru: "Она произошла в Дижоне 23 декабря 1951 года." },
+  { fr: "Des adultes, de bons chrétiens, ont installé une grande statue de saint Nicolas devant la cathédrale.", ru: "Взрослые, добропорядочные христиане, поставили у собора большую статую святого Николая." },
+  { fr: "Ils ont amené leurs enfants.", ru: "Они привели своих детей." },
+  { fr: "Mais ce n’était pas une fête joyeuse… C’était un supplice très cruel.", ru: "Но это было не радостное торжество… Это было очень жестокое наказание." },
+  { fr: "Devant les enfants, ils ont mis de l’essence sur le Père Noël. Puis ils ont mis le feu.", ru: "Прямо при детях они налили бензин на Деда Мороза. Потом подожгли." },
+  { fr: "Les pauvres enfants regardaient, avec peur, leur héros préféré qui brûlait.", ru: "Бедные дети в страхе смотрели, как горит их любимый герой." },
+  { fr: "Pourquoi les adultes ont fait ça ?", ru: "Почему взрослые это сделали?" },
+  { fr: "Parce que ces chrétiens voulaient dire non à un Noël trop commercial.", ru: "Потому что эти христиане хотели выступить против превращения Рождества в слишком коммерческий праздник." },
+  { fr: "Pour eux, le Père Noël faisait concurrence à Jésus.", ru: "Для них Пэр Ноэль конкурировал с Иисусом." },
+  { fr: "Et cette comparaison me plaît.", ru: "И мне нравится это сравнение." },
+  { fr: "Nous savons que ce vieux monsieur n’existe pas, mais nous avons besoin du mythe du Père Noël.", ru: "Мы знаем, что этого старика не существует, но нам нужен миф о Деде Морозе." },
+  { fr: "La différence, c’est que Dieu est un mythe pour les adultes, et le Père Noël est un mythe que nous créons pour les enfants.", ru: "Разница в том, что Бог — миф для взрослых, а Дед Мороз — миф, который мы создаем для детей." },
+  { fr: "Lévi-Strauss donne plusieurs réponses possibles à la question de savoir pourquoi on fait ça.", ru: "Леви-Стросс даёт несколько возможных ответов на вопрос, почему мы это делаем." },
+  { fr: "Mais moi, je pense que la raison est simple.", ru: "Но я думаю, что причина простая." },
+  { fr: "Nous voulons offrir à nos enfants un peu d’imagination et de joie.", ru: "Мы хотим подарить нашим детям немного фантазии и радости." },
+  { fr: "Même si c’est un papy bizarre en costume rouge, qui boit du Coca.", ru: "Даже если это странный дед в красном костюме, который пьёт колу." },
+  { fr: "Au fait, demain, nous allons à la maison du Père Noël près du Capitole.", ru: "Кстати, завтра мы идём в домик Деда Мороза у Капитолия." },
+  { fr: "Venez vous aussi !", ru: "Приходите и вы!" },
+];
+
+const elList = document.getElementById("list");
+const elTotal = document.getElementById("total");
+
+elTotal.textContent = SENTENCES.length;
+
+SENTENCES.forEach((item, idx) => {
+  const wrap = document.createElement("div");
+  wrap.className = "item";
+
+  const num = document.createElement("div");
+  num.className = "num";
+  num.textContent = idx + 1;
+
+  const texts = document.createElement("div");
+  texts.className = "texts";
+
+  const fr = document.createElement("div");
+  fr.className = "fr";
+  fr.textContent = item.fr;
+
+  const ru = document.createElement("div");
+  ru.className = "ru";
+  ru.textContent = item.ru;
+
+  texts.appendChild(fr);
+  texts.appendChild(ru);
+  wrap.appendChild(num);
+  wrap.appendChild(texts);
+  elList.appendChild(wrap);
+});
+</script>
+</body>
+</html>
