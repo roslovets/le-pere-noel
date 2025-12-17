@@ -1,0 +1,376 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Jeu — Assemble les phrases (Le Père Noël)</title>
+  <style>
+    :root { --r: 14px; }
+    body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; margin: 0; background:#0b0f14; color:#e9eef6; }
+    .wrap { max-width: 980px; margin: 0 auto; padding: 18px; }
+    .top {
+      display:flex; gap:12px; flex-wrap:wrap; align-items:center; justify-content:space-between;
+      padding: 12px 14px; background:#0f1621; border:1px solid #1b2a3a; border-radius: var(--r);
+    }
+    .title { font-weight:700; letter-spacing:.2px; }
+    .meta { display:flex; gap:10px; flex-wrap:wrap; opacity:.9; font-size:14px; }
+    .pill { padding:6px 10px; border:1px solid #243447; border-radius:999px; background:#0c131d; }
+    .grid { display:grid; grid-template-columns: 1.2fr .8fr; gap:14px; margin-top:14px; }
+    @media (max-width: 900px){ .grid{ grid-template-columns:1fr; } }
+
+    .card { background:#0f1621; border:1px solid #1b2a3a; border-radius: var(--r); padding: 14px; }
+    .card h3 { margin:0 0 10px; font-size: 16px; }
+    .small { font-size: 13px; opacity:.85; line-height:1.35; }
+
+    .zone {
+      min-height: 64px; padding: 10px; border-radius: 12px;
+      border:1px dashed #2b3d54; background:#0b121b;
+      display:flex; flex-wrap:wrap; gap:8px; align-items:flex-start;
+    }
+
+    .tokens { display:flex; flex-wrap:wrap; gap:8px; }
+    .token {
+      user-select:none; cursor:pointer;
+      padding: 8px 10px; border-radius: 999px;
+      border: 1px solid #2b3d54; background:#0c131d; color:#e9eef6;
+      font-size: 14px; line-height:1;
+      transition: transform .05s ease, background .15s ease, border-color .15s ease;
+    }
+    .token:hover { transform: translateY(-1px); border-color:#3f5a7a; }
+    .token:active { transform: translateY(0px); }
+    .token.bad { border-color:#7a2c2c; background:#1a0f10; }
+    .token.good { border-color:#2b7a4a; background:#0f1a14; }
+
+    .actions { display:flex; flex-wrap:wrap; gap:10px; margin-top: 12px; }
+    button {
+      cursor:pointer; border:none; border-radius: 12px;
+      padding: 10px 12px; background:#1a2a3d; color:#e9eef6; font-weight:600;
+    }
+    button.secondary { background:#0c131d; border:1px solid #2b3d54; }
+    button.danger { background:#3b1a1a; }
+    button:disabled { opacity:.45; cursor:not-allowed; }
+
+    .status { margin-top: 10px; font-size: 14px; }
+    .ok { color:#7dffb2; }
+    .no { color:#ff9b9b; }
+    .hint { margin-top: 8px; font-size: 13px; opacity:.9; }
+
+    .answerBox {
+      margin-top: 10px; padding: 10px; border-radius: 12px;
+      border:1px solid #2b3d54; background:#0b121b;
+      display:none;
+    }
+
+    .row { display:flex; gap:10px; flex-wrap:wrap; align-items:center; justify-content:space-between; }
+    .progress { width: 100%; height: 10px; background:#0b121b; border:1px solid #1b2a3a; border-radius:999px; overflow:hidden; margin-top:10px; }
+    .bar { height: 100%; width: 0%; background:#3f5a7a; }
+    .kbd { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; padding:2px 6px; border:1px solid #2b3d54; border-radius:8px; background:#0c131d; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="top">
+      <div class="title">Jeu: assemble les phrases — <span style="opacity:.85">Le Père Noël</span></div>
+      <div class="meta">
+        <div class="pill">Phrase: <span id="idx">1</span>/<span id="total">0</span></div>
+        <div class="pill">Score: <span id="score">0</span></div>
+        <div class="pill">Aide: <span class="kbd">Clique</span> pour déplacer</div>
+      </div>
+    </div>
+
+    <div class="progress"><div class="bar" id="bar"></div></div>
+
+    <div class="grid">
+      <div class="card">
+        <h3>Собери французское предложение из кусочков</h3>
+
+        <div class="small" style="margin-bottom:8px;">
+          1) Кликаешь по кусочку снизу → он добавляется в предложение. <br/>
+          2) Если ошибся — кликни по кусочку в собранном предложении, чтобы убрать обратно вниз. <br/>
+          3) Нажми “Проверить” или “Показать ответ”.
+        </div>
+
+        <div class="small" style="margin:10px 0 6px;">Текущее предложение (твоя сборка):</div>
+        <div class="zone" id="built"></div>
+
+        <div class="actions">
+          <button id="checkBtn">Проверить</button>
+          <button id="showBtn" class="secondary">Показать ответ</button>
+          <button id="resetBtn" class="secondary">Сбросить</button>
+          <button id="prevBtn" class="secondary">← Пред.</button>
+          <button id="nextBtn" class="secondary">След. →</button>
+        </div>
+
+        <div class="status" id="status"></div>
+
+        <div class="answerBox" id="answerBox">
+          <div class="small" style="opacity:.95; margin-bottom:6px;">Правильный ответ:</div>
+          <div id="answerFR" style="font-weight:700; margin-bottom:8px;"></div>
+          <div class="small" style="opacity:.9;">Перевод (ориентир):</div>
+          <div id="answerRU" style="margin-top:4px;"></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>Кусочки (есть лишние!)</h3>
+        <div class="small" style="margin-bottom:10px;">
+          Внизу перемешаны правильные фрагменты + “ловушки”.
+          Ловушки часто выглядят “почти правильно” (артикли, предлоги, времена, запятые).
+        </div>
+
+        <div class="tokens" id="pool"></div>
+
+        <div class="hint">
+          Подсказка: правильный ответ сравнивается строго (включая запятые и пробелы между токенами).
+        </div>
+      </div>
+    </div>
+  </div>
+
+<script>
+/**
+ * Данные: берём твой текст (французская фраза + русский перевод),
+ * и для каждой фразы генерируем:
+ * - tokens: правильные кусочки
+ * - distractors: лишние кусочки с подвохом
+ *
+ * Токены можно править вручную, если захочешь сделать сложнее/легче.
+ */
+const SENTENCES = [
+  { fr: "Quel est le symbole principal de Noël, après le sapin et Coca-Cola ?", ru: "Какой главный символ Рождества после ёлки и Coca-Cola?" },
+  { fr: "Qui vient la nuit chez nos enfants et leur apporte des cadeaux pour le Nouvel An ?", ru: "Кто приходит к нашим детям по ночам и приносит им подарки на Новый год?" },
+  { fr: "C’est le Père Noël ou bien saint Nicolas.", ru: "Это Дед Мороз, или святой Николай." },
+  { fr: "Mais pourquoi sommes-nous si attachés à ce personnage ?", ru: "Но почему мы так привязаны к этому персонажу?" },
+  { fr: "Pourquoi notre culture le fait revenir chaque année ?", ru: "Почему наша культура «возвращает» его каждый год?" },
+  { fr: "En ce moment, j’explique à mon petit garçon qu’il a un papy Dima, un papy Vova et un troisième papy : Ded Moroz. Ce n’est pas cringe, ça ?", ru: "Сейчас я объясняю своему маленькому сыну, что у него есть дед Дима, дед Вова и ещё какой-то третий дед: Дед Мороз. Это не кринж, а?" },
+  { fr: "Claude Lévi-Strauss, un anthropologue français, parle de cette question dans son essai Le Père Noël supplicié.", ru: "Клод Леви-Стросс, французский антрополог, говорит об этом в своём эссе Le Père Noël supplicié." },
+  { fr: "Dans cet essai, il décrit une scène très choquante.", ru: "В этом эссе он описывает очень шокирующую сцену." },
+  { fr: "Elle a eu lieu à Dijon, le 23 décembre 1951.", ru: "Она произошла в Дижоне 23 декабря 1951 года." },
+  { fr: "Des adultes, de bons chrétiens, ont installé une grande statue de saint Nicolas devant la cathédrale.", ru: "Взрослые, добропорядочные христиане, поставили у собора большую статую святого Николая." },
+  { fr: "Ils ont amené leurs enfants.", ru: "Они привели своих детей." },
+  { fr: "Mais ce n’était pas une fête joyeuse… C’était un supplice très cruel.", ru: "Но это было не радостное торжество… Это было очень жестокое наказание." },
+  { fr: "Devant les enfants, ils ont mis de l’essence sur le Père Noël. Puis ils ont mis le feu.", ru: "Прямо при детях они налили бензин на Деда Мороза. Потом подожгли." },
+  { fr: "Les pauvres enfants regardaient, avec peur, leur héros préféré qui brûlait.", ru: "Бедные дети в страхе смотрели, как горит их любимый герой." },
+  { fr: "Pourquoi les adultes ont fait ça ?", ru: "Почему взрослые это сделали?" },
+  { fr: "Parce que ces chrétiens voulaient dire non à un Noël trop commercial.", ru: "Потому что эти христиане хотели выступить против превращения Рождества в слишком коммерческий праздник." },
+  { fr: "Pour eux, le Père Noël faisait concurrence à Jésus.", ru: "Для них Пэр Ноэль конкурировал с Иисусом." },
+  { fr: "Et cette comparaison me plaît.", ru: "И мне нравится это сравнение." },
+  { fr: "Nous savons que ce vieux monsieur n’existe pas, mais nous avons besoin du mythe du Père Noël.", ru: "Мы знаем, что этого старика не существует, но нам нужен миф о Деде Морозе." },
+  { fr: "La différence, c’est que Dieu est un mythe pour les adultes, et le Père Noël est un mythe que nous créons pour les enfants.", ru: "Разница в том, что Бог — миф для взрослых, а Дед Мороз — миф, который мы создаем для детей." },
+  { fr: "Lévi-Strauss donne plusieurs réponses possibles à la question de savoir pourquoi on fait ça.", ru: "Леви-Стросс даёт несколько возможных ответов на вопрос, почему мы это делаем." },
+  { fr: "Mais moi, je pense que la raison est simple.", ru: "Но я думаю, что причина простая." },
+  { fr: "Nous voulons offrir à nos enfants un peu d’imagination et de joie.", ru: "Мы хотим подарить нашим детям немного фантазии и радости." },
+  { fr: "Même si c’est un papy bizarre en costume rouge, qui boit du Coca.", ru: "Даже если это странный дед в красном костюме, который пьёт колу." },
+  { fr: "Au fait, demain, nous allons à la maison du Père Noël près du Capitole.", ru: "Кстати, завтра мы идём в домик Деда Мороза у Капитолия." },
+  { fr: "Venez vous aussi !", ru: "Приходите и вы!" },
+];
+
+// Простая токенизация: слова + знаки препинания отдельными токенами
+function tokenizeFR(fr) {
+  // разделяем пунктуацию как отдельные токены
+  // сохраняем апострофы внутри слов (j’explique) как часть токена
+  const spaced = fr
+    .replace(/([,!?…:.])/g, " $1 ")
+    .replace(/\s+/g, " ")
+    .trim();
+  return spaced.split(" ");
+}
+
+// Генерация ловушек: "почти правильные" элементы
+function makeDistractors(tokens, fr) {
+  const d = new Set();
+
+  // Общие ловушки
+  ["de", "du", "des", "le", "la", "les", "un", "une", "à", "au", "aux", "en", "dans", "sur", "chez",
+   "ne", "pas", "plus", "très", "trop", "bien", "aussi", "ce", "cette", "cet", "ces",
+   "pour", "par", "avec", "sans", "que", "qui", "quoi", "où", "quand", "comment"
+  ].forEach(x => { if (!tokens.includes(x)) d.add(x); });
+
+  // Ловушки с похожими кусками
+  if (tokens.includes("on")) d.add("nous");
+  if (tokens.includes("nous")) d.add("on");
+
+  if (fr.includes("Coca-Cola")) d.add("Coca"); // обрежем бренд
+  if (fr.includes("Nouvel")) { d.add("Nouvelle"); d.add("Noël"); }
+  if (fr.includes("Père")) { d.add("Pere"); d.add("le Père"); d.add("Père"); } // варианты
+  if (fr.includes("saint")) { d.add("Sainte"); d.add("Saint"); }
+
+  // Времена/форма глагола
+  if (tokens.includes("voulait")) d.add("veut");
+  if (tokens.includes("ont")) d.add("a");
+  if (tokens.includes("est")) d.add("étais");
+  if (tokens.includes("sommes-nous")) d.add("sommes");
+  if (tokens.includes("allons")) d.add("va");
+
+  // Запятые/пунктуация как ловушка
+  if (!tokens.includes(",")) d.add(",");
+  if (!tokens.includes("?")) d.add("?");
+  if (!tokens.includes(".")) d.add(".");
+
+  // Ограничим количество
+  return Array.from(d).filter(x => x && !tokens.includes(x));
+}
+
+function shuffle(arr) {
+  const a = arr.slice();
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function joinTokens(tokens) {
+  // Склеиваем с правилами пробелов перед пунктуацией
+  let s = "";
+  for (let i=0;i<tokens.length;i++){
+    const t = tokens[i];
+    if (i === 0) { s += t; continue; }
+    if ([",","?","!","…",".",":",";"].includes(t)) {
+      s += " " + t; // во франц. обычно пробел перед ? ! : ; (и часто перед …)
+    } else {
+      s += " " + t;
+    }
+  }
+  return s.replace(/\s+/g," ").trim();
+}
+
+let state = {
+  i: 0,
+  built: [],
+  pool: [],
+  score: 0,
+  solved: new Set(), // индексы правильно решённых
+};
+
+const elIdx = document.getElementById("idx");
+const elTotal = document.getElementById("total");
+const elScore = document.getElementById("score");
+const elPool = document.getElementById("pool");
+const elBuilt = document.getElementById("built");
+const elStatus = document.getElementById("status");
+const elAnswerBox = document.getElementById("answerBox");
+const elAnswerFR = document.getElementById("answerFR");
+const elAnswerRU = document.getElementById("answerRU");
+const elBar = document.getElementById("bar");
+
+document.getElementById("checkBtn").addEventListener("click", check);
+document.getElementById("showBtn").addEventListener("click", showAnswer);
+document.getElementById("resetBtn").addEventListener("click", resetBuilt);
+document.getElementById("prevBtn").addEventListener("click", () => go(-1));
+document.getElementById("nextBtn").addEventListener("click", () => go(+1));
+
+function render() {
+  elTotal.textContent = SENTENCES.length;
+  elIdx.textContent = (state.i + 1);
+  elScore.textContent = String(state.score);
+  elBar.style.width = ((state.i) / (SENTENCES.length-1 || 1) * 100) + "%";
+
+  elStatus.textContent = "";
+  elStatus.className = "status";
+  elAnswerBox.style.display = "none";
+
+  // Рендер собранной зоны
+  elBuilt.innerHTML = "";
+  state.built.forEach((tok, idx) => {
+    const b = document.createElement("span");
+    b.className = "token";
+    b.textContent = tok;
+    b.title = "Клик — убрать вниз";
+    b.addEventListener("click", () => {
+      // убрать обратно вниз
+      state.built.splice(idx, 1);
+      state.pool.push(tok);
+      state.pool = shuffle(state.pool);
+      render();
+    });
+    elBuilt.appendChild(b);
+  });
+
+  // Рендер пула токенов
+  elPool.innerHTML = "";
+  state.pool.forEach((tok, idx) => {
+    const t = document.createElement("span");
+    t.className = "token";
+    t.textContent = tok;
+    t.title = "Клик — добавить наверх";
+    t.addEventListener("click", () => {
+      state.pool.splice(idx, 1);
+      state.built.push(tok);
+      render();
+    });
+    elPool.appendChild(t);
+  });
+
+  // Кнопки prev/next
+  document.getElementById("prevBtn").disabled = state.i === 0;
+  document.getElementById("nextBtn").disabled = state.i === SENTENCES.length - 1;
+}
+
+function loadSentence(i) {
+  state.i = i;
+  const s = SENTENCES[state.i];
+  const tokens = tokenizeFR(s.fr);
+
+  // делаем ловушки (часть возьмём случайно, чтобы не перегружать)
+  const distractors = shuffle(makeDistractors(tokens, s.fr)).slice(0, Math.min(8, Math.max(4, Math.floor(tokens.length/3))));
+  state.built = [];
+  state.pool = shuffle([...tokens, ...distractors]);
+  render();
+}
+
+function resetBuilt(){
+  // вернуть всё вниз
+  state.pool = shuffle([...state.pool, ...state.built]);
+  state.built = [];
+  elStatus.textContent = "";
+  elStatus.className = "status";
+  elAnswerBox.style.display = "none";
+  render();
+}
+
+function check() {
+  const target = SENTENCES[state.i].fr;
+  const attempt = joinTokens(state.built);
+
+  // визуальная подсветка: какие токены совпадают по позиции
+  const correctTokens = tokenizeFR(target);
+  const builtEls = Array.from(elBuilt.querySelectorAll(".token"));
+  builtEls.forEach((el, idx) => {
+    el.classList.remove("good","bad");
+    if (correctTokens[idx] === state.built[idx]) el.classList.add("good");
+    else el.classList.add("bad");
+  });
+
+  if (attempt === target) {
+    elStatus.textContent = "✅ Верно! Отлично.";
+    elStatus.className = "status ok";
+    if (!state.solved.has(state.i)) {
+      state.solved.add(state.i);
+      state.score += 1;
+      elScore.textContent = String(state.score);
+    }
+  } else {
+    elStatus.textContent = "❌ Пока не совпало. Попробуй переставить/убрать лишнее или нажми “Показать ответ”.";
+    elStatus.className = "status no";
+  }
+}
+
+function showAnswer() {
+  const s = SENTENCES[state.i];
+  elAnswerFR.textContent = s.fr;
+  elAnswerRU.textContent = s.ru;
+  elAnswerBox.style.display = "block";
+}
+
+function go(delta){
+  const next = state.i + delta;
+  if (next < 0 || next >= SENTENCES.length) return;
+  loadSentence(next);
+}
+
+// init
+loadSentence(0);
+</script>
+</body>
+</html>
