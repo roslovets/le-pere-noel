@@ -5,89 +5,145 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Jeu — Assemble les phrases (Le Père Noël)</title>
   <style>
-    :root { --r: 14px; }
-    body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; margin: 0; background:#0b0f14; color:#e9eef6; }
-    .wrap { max-width: 980px; margin: 0 auto; padding: 18px; }
+    @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700&family=Playfair+Display:wght@700&display=swap');
+    :root {
+      --r: 14px;
+      --bg: #061216;
+      --panel: rgba(12, 24, 31, 0.88);
+      --panel-2: rgba(18, 32, 41, 0.82);
+      --border: rgba(255, 255, 255, 0.14);
+      --text: #f6fbff;
+      --muted: #cfdceb;
+      --accent: #e7445b;
+      --accent-2: #1ea06d;
+      --gold: #f4c36a;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      font-family: 'Manrope', system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+      margin: 0;
+      background:
+        radial-gradient(circle at 20% 20%, rgba(244, 195, 106, 0.18), transparent 28%),
+        radial-gradient(circle at 82% 8%, rgba(231, 68, 91, 0.16), transparent 30%),
+        linear-gradient(135deg, #07131a, #0b1c22 45%, #0f152c);
+      color: var(--text);
+      min-height: 100vh;
+    }
+    .wrap { max-width: 1080px; margin: 0 auto; padding: 20px 18px 36px; }
     .top {
       display:flex; gap:12px; flex-wrap:wrap; align-items:center; justify-content:space-between;
-      padding: 12px 14px; background:#0f1621; border:1px solid #1b2a3a; border-radius: var(--r);
+      padding: 14px 16px;
+      background: linear-gradient(115deg, rgba(28, 129, 88, 0.95), rgba(216, 72, 93, 0.95));
+      border:1px solid rgba(255, 255, 255, 0.22);
+      border-radius: var(--r);
+      box-shadow: 0 14px 35px rgba(0, 0, 0, 0.32), 0 10px 34px rgba(231, 68, 91, 0.25);
     }
-    .title { font-weight:700; letter-spacing:.2px; }
-    .meta { display:flex; gap:10px; flex-wrap:wrap; opacity:.9; font-size:14px; }
-    .pill { padding:6px 10px; border:1px solid #243447; border-radius:999px; background:#0c131d; }
-    .grid { display:grid; grid-template-columns: 1.2fr .8fr; gap:14px; margin-top:14px; }
+    .title { font-weight:700; letter-spacing:.3px; font-size:20px; font-family:'Playfair Display','Manrope',serif; color:#fff; }
+    .meta { display:flex; gap:10px; flex-wrap:wrap; opacity:.95; font-size:14px; color:#fff; }
+    .pill { padding:6px 10px; border:1px solid rgba(255,255,255,0.3); border-radius:999px; background: rgba(255,255,255,0.12); backdrop-filter: blur(6px); }
+    .grid { display:grid; grid-template-columns: 1.2fr .8fr; gap:16px; margin-top:16px; }
     @media (max-width: 900px){ .grid{ grid-template-columns:1fr; } }
 
-    .card { background:#0f1621; border:1px solid #1b2a3a; border-radius: var(--r); padding: 14px; }
-    .card h3 { margin:0 0 10px; font-size: 16px; }
-    .small { font-size: 13px; opacity:.85; line-height:1.35; }
+    .card { background: var(--panel); border:1px solid var(--border); border-radius: var(--r); padding: 16px; box-shadow: 0 12px 28px rgba(0,0,0,0.28); }
+    .card h3 { margin:0 0 10px; font-size: 17px; letter-spacing:.2px; color: #fdf3e6; }
+    .small { font-size: 13px; opacity:.9; line-height:1.45; color: var(--muted); }
+
+    .translation {
+      margin: 10px 0 12px;
+      padding: 12px 14px;
+      border-radius: 12px;
+      border: 1px solid rgba(244, 195, 106, 0.4);
+      background: linear-gradient(135deg, rgba(20, 80, 58, 0.9), rgba(22, 110, 72, 0.85));
+      color: #f5fff6;
+      box-shadow: 0 14px 30px rgba(6, 35, 23, 0.4);
+    }
+    .translation .label { text-transform: uppercase; letter-spacing: .35px; font-size: 11px; color: #c7ffd6; opacity:.95; }
+    .translation .ru { margin-top: 6px; font-size: 15px; font-weight: 700; }
 
     .zone {
       min-height: 64px; padding: 10px; border-radius: 12px;
-      border:1px dashed #2b3d54; background:#0b121b;
+      border:1px dashed rgba(244, 195, 106, 0.4); background: var(--panel-2);
       display:flex; flex-wrap:wrap; gap:8px; align-items:flex-start;
     }
 
     .tokens { display:flex; flex-wrap:wrap; gap:8px; }
     .token {
       user-select:none; cursor:pointer;
-      padding: 8px 10px; border-radius: 999px;
-      border: 1px solid #2b3d54; background:#0c131d; color:#e9eef6;
+      padding: 9px 11px; border-radius: 999px;
+      border: 1px solid rgba(255,255,255,0.12);
+      background: linear-gradient(135deg, rgba(35, 119, 84, 0.95), rgba(30, 156, 100, 0.95));
+      color:#f6fff4;
       font-size: 14px; line-height:1;
-      transition: transform .05s ease, background .15s ease, border-color .15s ease;
+      box-shadow: 0 10px 22px rgba(18, 98, 68, 0.35);
+      transition: transform .06s ease, background .15s ease, border-color .15s ease, box-shadow .15s ease;
     }
-    .token:hover { transform: translateY(-1px); border-color:#3f5a7a; }
-    .token:active { transform: translateY(0px); }
-    .token.bad { border-color:#7a2c2c; background:#1a0f10; }
-    .token.good { border-color:#2b7a4a; background:#0f1a14; }
+    .token:hover { transform: translateY(-2px); border-color: rgba(244, 195, 106, 0.9); box-shadow: 0 12px 26px rgba(231, 68, 91, 0.25); }
+    .token:active { transform: translateY(0px) scale(0.99); }
+    .token.bad { border-color:#ff8d8d; background: linear-gradient(135deg, #5f1c1c, #8c2d2d); }
+    .token.good { border-color:#a4ffc4; background: linear-gradient(135deg, #1c5f3a, #278b56); }
+    .token.dragover { outline: 2px dashed var(--gold); outline-offset: 2px; }
 
     .actions { display:flex; flex-wrap:wrap; gap:10px; margin-top: 12px; }
     button {
       cursor:pointer; border:none; border-radius: 12px;
-      padding: 10px 12px; background:#1a2a3d; color:#e9eef6; font-weight:600;
+      padding: 11px 13px; background: linear-gradient(135deg, #e7445b, #f67767); color:#fff; font-weight:700;
+      box-shadow: 0 12px 26px rgba(231, 68, 91, 0.32);
+      transition: transform .07s ease, box-shadow .15s ease, filter .15s ease;
     }
-    button.secondary { background:#0c131d; border:1px solid #2b3d54; }
-    button.danger { background:#3b1a1a; }
-    button:disabled { opacity:.45; cursor:not-allowed; }
+    button:hover { transform: translateY(-1px); box-shadow: 0 14px 28px rgba(244, 195, 106, 0.25); filter: brightness(1.02); }
+    button.secondary { background: linear-gradient(135deg, #176846, #1e8a5b); border:1px solid rgba(160, 255, 198, 0.4); box-shadow: 0 12px 24px rgba(18, 98, 68, 0.3); }
+    button.danger { background: linear-gradient(135deg, #8d1f1f, #b73232); }
+    button:disabled { opacity:.45; cursor:not-allowed; box-shadow: none; transform:none; }
 
     .status { margin-top: 10px; font-size: 14px; }
-    .ok { color:#7dffb2; }
-    .no { color:#ff9b9b; }
-    .hint { margin-top: 8px; font-size: 13px; opacity:.9; }
+    .ok { color:#afffba; }
+    .no { color:#ffc5c5; }
+    .hint { margin-top: 8px; font-size: 13px; opacity:.9; color: var(--muted); }
 
     .answerBox {
-      margin-top: 10px; padding: 10px; border-radius: 12px;
-      border:1px solid #2b3d54; background:#0b121b;
+      margin-top: 10px; padding: 12px; border-radius: 12px;
+      border:1px solid rgba(255,255,255,0.14); background: rgba(255,255,255,0.04);
       display:none;
     }
 
     .row { display:flex; gap:10px; flex-wrap:wrap; align-items:center; justify-content:space-between; }
-    .progress { width: 100%; height: 10px; background:#0b121b; border:1px solid #1b2a3a; border-radius:999px; overflow:hidden; margin-top:10px; }
-    .bar { height: 100%; width: 0%; background:#3f5a7a; }
-    .kbd { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; padding:2px 6px; border:1px solid #2b3d54; border-radius:8px; background:#0c131d; }
+    .progressSegments { display:flex; gap:6px; align-items:center; margin-top: 12px; }
+    .seg {
+      flex:1; min-width:14px; height: 10px;
+      border-radius: 999px; background: rgba(255,255,255,0.12); border:1px solid rgba(255,255,255,0.2);
+      transition: transform .08s ease, box-shadow .12s ease, border-color .12s ease;
+    }
+    .seg.current { transform: translateY(-1px); box-shadow: 0 8px 20px rgba(244, 195, 106, 0.35); border-color: rgba(244,195,106,0.9); }
+    .seg.ok { background: linear-gradient(135deg, #1e8a5b, #2fb879); border-color: rgba(160,255,198,0.7); }
+    .seg.fail { background: linear-gradient(135deg, #8d1f1f, #b73232); border-color: rgba(255,141,141,0.8); }
+    .kbd { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; padding:2px 6px; border:1px solid rgba(255,255,255,0.2); border-radius:8px; background: rgba(255,255,255,0.08); color:#f6fbff; }
+
+    @media (max-width: 640px) {
+      .progressSegments { flex-wrap: wrap; gap:4px; }
+      .seg { flex: 1 0 calc(16% - 4px); min-width: 22px; height: 8px; }
+    }
   </style>
 </head>
 <body>
   <div class="wrap">
     <div class="top">
-      <div class="title">Jeu: assemble les phrases — <span style="opacity:.85">Le Père Noël</span></div>
+      <div class="title">Jeu: assemble les phrases — <span style="opacity:.85">Le Père Noël 🎅</span></div>
       <div class="meta">
         <div class="pill">Phrase: <span id="idx">1</span>/<span id="total">0</span></div>
         <div class="pill">Score: <span id="score">0</span></div>
-        <div class="pill">Aide: <span class="kbd">Clique</span> pour déplacer</div>
       </div>
     </div>
 
-    <div class="progress"><div class="bar" id="bar"></div></div>
+    <div class="progressSegments" id="progressSegments"></div>
 
     <div class="grid">
       <div class="card">
         <h3>Собери французское предложение из кусочков</h3>
 
-        <div class="small" style="margin-bottom:8px;">
-          1) Кликаешь по кусочку снизу → он добавляется в предложение. <br/>
-          2) Если ошибся — кликни по кусочку в собранном предложении, чтобы убрать обратно вниз. <br/>
-          3) Нажми “Проверить” или “Показать ответ”.
+        <div class="translation">
+          <div class="label">Перевод</div>
+          <div id="instantRU" class="ru"></div>
         </div>
 
         <div class="small" style="margin:10px 0 6px;">Текущее предложение (твоя сборка):</div>
@@ -95,7 +151,7 @@
 
         <div class="actions">
           <button id="checkBtn">Проверить</button>
-          <button id="showBtn" class="secondary">Показать ответ</button>
+          <button id="showBtn" class="secondary">Сдаться</button>
           <button id="resetBtn" class="secondary">Сбросить</button>
           <button id="prevBtn" class="secondary">← Пред.</button>
           <button id="nextBtn" class="secondary">След. →</button>
@@ -113,16 +169,8 @@
 
       <div class="card">
         <h3>Кусочки (есть лишние!)</h3>
-        <div class="small" style="margin-bottom:10px;">
-          Внизу перемешаны правильные фрагменты + “ловушки”.
-          Ловушки часто выглядят “почти правильно” (артикли, предлоги, времена, запятые).
-        </div>
 
         <div class="tokens" id="pool"></div>
-
-        <div class="hint">
-          Подсказка: правильный ответ сравнивается строго (включая запятые и пробелы между токенами).
-        </div>
       </div>
     </div>
   </div>
@@ -167,12 +215,7 @@ const SENTENCES = [
 
 // Простая токенизация: слова + знаки препинания отдельными токенами
 function tokenizeFR(fr) {
-  // разделяем пунктуацию как отдельные токены
-  // сохраняем апострофы внутри слов (j’explique) как часть токена
-  const spaced = fr
-    .replace(/([,!?…:.])/g, " $1 ")
-    .replace(/\s+/g, " ")
-    .trim();
+  const spaced = fr.replace(/\s+/g, " ").trim();
   return spaced.split(" ");
 }
 
@@ -202,11 +245,6 @@ function makeDistractors(tokens, fr) {
   if (tokens.includes("sommes-nous")) d.add("sommes");
   if (tokens.includes("allons")) d.add("va");
 
-  // Запятые/пунктуация как ловушка
-  if (!tokens.includes(",")) d.add(",");
-  if (!tokens.includes("?")) d.add("?");
-  if (!tokens.includes(".")) d.add(".");
-
   // Ограничим количество
   return Array.from(d).filter(x => x && !tokens.includes(x));
 }
@@ -221,18 +259,7 @@ function shuffle(arr) {
 }
 
 function joinTokens(tokens) {
-  // Склеиваем с правилами пробелов перед пунктуацией
-  let s = "";
-  for (let i=0;i<tokens.length;i++){
-    const t = tokens[i];
-    if (i === 0) { s += t; continue; }
-    if ([",","?","!","…",".",":",";"].includes(t)) {
-      s += " " + t; // во франц. обычно пробел перед ? ! : ; (и часто перед …)
-    } else {
-      s += " " + t;
-    }
-  }
-  return s.replace(/\s+/g," ").trim();
+  return tokens.join(" ").replace(/\s+/g," ").trim();
 }
 
 let state = {
@@ -241,6 +268,7 @@ let state = {
   pool: [],
   score: 0,
   solved: new Set(), // индексы правильно решённых
+  results: Array(SENTENCES.length).fill("pending"), // per-phrase: "pending" | "ok" | "fail"
 };
 
 const elIdx = document.getElementById("idx");
@@ -252,7 +280,8 @@ const elStatus = document.getElementById("status");
 const elAnswerBox = document.getElementById("answerBox");
 const elAnswerFR = document.getElementById("answerFR");
 const elAnswerRU = document.getElementById("answerRU");
-const elBar = document.getElementById("bar");
+const elInstantRU = document.getElementById("instantRU");
+const elSegments = document.getElementById("progressSegments");
 
 document.getElementById("checkBtn").addEventListener("click", check);
 document.getElementById("showBtn").addEventListener("click", showAnswer);
@@ -264,11 +293,12 @@ function render() {
   elTotal.textContent = SENTENCES.length;
   elIdx.textContent = (state.i + 1);
   elScore.textContent = String(state.score);
-  elBar.style.width = ((state.i) / (SENTENCES.length-1 || 1) * 100) + "%";
 
   elStatus.textContent = "";
   elStatus.className = "status";
   elAnswerBox.style.display = "none";
+  elInstantRU.textContent = SENTENCES[state.i].ru;
+  updateSegments();
 
   // Рендер собранной зоны
   elBuilt.innerHTML = "";
@@ -277,6 +307,7 @@ function render() {
     b.className = "token";
     b.textContent = tok;
     b.title = "Клик — убрать вниз";
+    b.draggable = true;
     b.addEventListener("click", () => {
       // убрать обратно вниз
       state.built.splice(idx, 1);
@@ -284,6 +315,27 @@ function render() {
       state.pool = shuffle(state.pool);
       render();
     });
+    b.addEventListener("dragstart", (e) => {
+      e.dataTransfer?.setData("text/plain", String(idx));
+      e.dataTransfer?.setDragImage(b, 10, 10);
+    });
+    b.addEventListener("dragover", (e) => {
+      e.preventDefault();
+      b.classList.add("dragover");
+    });
+    b.addEventListener("dragleave", () => b.classList.remove("dragover"));
+    b.addEventListener("drop", (e) => {
+      e.preventDefault();
+      b.classList.remove("dragover");
+      const from = Number(e.dataTransfer?.getData("text/plain"));
+      const to = idx;
+      if (Number.isInteger(from)) {
+        const [item] = state.built.splice(from, 1);
+        state.built.splice(to, 0, item);
+        render();
+      }
+    });
+    b.addEventListener("dragend", () => b.classList.remove("dragover"));
     elBuilt.appendChild(b);
   });
 
@@ -306,6 +358,32 @@ function render() {
   document.getElementById("prevBtn").disabled = state.i === 0;
   document.getElementById("nextBtn").disabled = state.i === SENTENCES.length - 1;
 }
+
+function updateSegments() {
+  if (!elSegments) return;
+  elSegments.innerHTML = "";
+  const res = state.results.length === SENTENCES.length ? state.results : Array(SENTENCES.length).fill("pending");
+  res.forEach((status, idx) => {
+    const seg = document.createElement("div");
+    seg.className = "seg";
+    if (status === "ok") seg.classList.add("ok");
+    if (status === "fail") seg.classList.add("fail");
+    if (idx === state.i) seg.classList.add("current");
+    seg.title = `Фраза ${idx + 1} / ${SENTENCES.length}`;
+    elSegments.appendChild(seg);
+  });
+}
+
+// Позволяем бросать на пустую зону, чтобы поставить в конец
+elBuilt.addEventListener("dragover", (e) => e.preventDefault());
+elBuilt.addEventListener("drop", (e) => {
+  e.preventDefault();
+  const from = Number(e.dataTransfer?.getData("text/plain"));
+  if (!Number.isInteger(from)) return;
+  const [item] = state.built.splice(from, 1);
+  state.built.push(item);
+  render();
+});
 
 function loadSentence(i) {
   state.i = i;
@@ -345,6 +423,7 @@ function check() {
   if (attempt === target) {
     elStatus.textContent = "✅ Верно! Отлично.";
     elStatus.className = "status ok";
+    state.results[state.i] = "ok";
     if (!state.solved.has(state.i)) {
       state.solved.add(state.i);
       state.score += 1;
@@ -353,7 +432,9 @@ function check() {
   } else {
     elStatus.textContent = "❌ Пока не совпало. Попробуй переставить/убрать лишнее или нажми “Показать ответ”.";
     elStatus.className = "status no";
+    if (state.results[state.i] !== "ok") state.results[state.i] = "fail";
   }
+  updateSegments();
 }
 
 function showAnswer() {
